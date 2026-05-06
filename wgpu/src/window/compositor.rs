@@ -331,6 +331,7 @@ impl graphics::Compositor for Compositor {
                 | wgpu::TextureUsages::COPY_SRC
         } else {
             wgpu::TextureUsages::RENDER_ATTACHMENT
+                | wgpu::TextureUsages::COPY_SRC
         };
 
         surface.configure(
