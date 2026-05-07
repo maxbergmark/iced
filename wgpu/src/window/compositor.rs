@@ -177,6 +177,12 @@ impl Compositor {
 
             match result {
                 Ok((device, queue)) => {
+                    device.on_uncaptured_error(std::sync::Arc::new(|err| {
+                        log::error!("wgpu uncaptured error: {err}");
+                    }));
+                    device.set_device_lost_callback(Box::new(|reason, msg| {
+                        log::error!("wgpu device lost: {reason:?}: {msg}");
+                    }));
                     let engine = Engine::new(
                         &adapter,
                         device,
