@@ -177,12 +177,6 @@ impl Compositor {
 
             match result {
                 Ok((device, queue)) => {
-                    device.on_uncaptured_error(std::sync::Arc::new(|err| {
-                        log::error!("wgpu uncaptured error: {err}");
-                    }));
-                    device.set_device_lost_callback(Box::new(|reason, msg| {
-                        log::error!("wgpu device lost: {reason:?}: {msg}");
-                    }));
                     let engine = Engine::new(
                         &adapter,
                         device,
@@ -332,7 +326,9 @@ impl graphics::Compositor for Compositor {
         let capabilities = surface.get_capabilities(&self.adapter);
         let has_copy_src =
             capabilities.usages.contains(wgpu::TextureUsages::COPY_SRC);
-        let usage = if has_copy_src {
+        // On WASM, COPY_SRC is never advertised, so we always include it.
+        // https://github.com/gfx-rs/wgpu/blob/72bb53b0ed9c49b49f71d738cfe3acc982ce7ab0/wgpu/src/backend/webgpu.rs#L3941
+        let usage = if has_copy_src || cfg!(target_arch = "wasm32") {
             wgpu::TextureUsages::RENDER_ATTACHMENT
                 | wgpu::TextureUsages::COPY_SRC
         } else {
