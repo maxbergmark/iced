@@ -135,7 +135,6 @@ impl Compositor {
                 } else {
                     wgpu::CompositeAlphaMode::Auto
                 };
-                let format = Some(wgpu::TextureFormat::Rgba8Unorm);
                 format.zip(Some(preferred_alpha))
             })
             .ok_or(Error::IncompatibleSurface)?;
