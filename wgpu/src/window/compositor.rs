@@ -329,7 +329,7 @@ impl graphics::Compositor for Compositor {
         // https://github.com/gfx-rs/wgpu/blob/72bb53b0ed9c49b49f71d738cfe3acc982ce7ab0/wgpu/src/backend/webgpu.rs#L3941
         let usage = if has_copy_src || cfg!(target_arch = "wasm32") {
             wgpu::TextureUsages::RENDER_ATTACHMENT
-                | wgpu::TextureUsages::COPY_SRC
+                // | wgpu::TextureUsages::COPY_SRC
         } else {
             wgpu::TextureUsages::RENDER_ATTACHMENT
         };
