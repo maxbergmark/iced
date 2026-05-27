@@ -45,7 +45,7 @@ mod image;
 #[path = "image/null.rs"]
 mod image;
 
-use buffer::Buffer;
+use buffer::{Belt, Buffer};
 
 use iced_debug as debug;
 pub use iced_graphics as graphics;
@@ -92,7 +92,7 @@ pub struct Renderer {
     #[cfg(any(feature = "svg", feature = "image"))]
     image_cache: std::cell::RefCell<image::Cache>,
 
-    staging_belt: wgpu::util::StagingBelt,
+    staging_belt: Belt,
 }
 
 impl Renderer {
@@ -123,7 +123,8 @@ impl Renderer {
             // TODO: Resize belt smartly (?)
             // It would be great if the `StagingBelt` API exposed methods
             // for introspection to detect when a resize may be worth it.
-            staging_belt: wgpu::util::StagingBelt::new(
+            staging_belt: Belt::new(
+                &engine.queue,
                 buffer::MAX_WRITE_SIZE as u64,
             ),
 

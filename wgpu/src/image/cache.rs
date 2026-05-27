@@ -23,14 +23,14 @@ pub struct Cache {
 impl Cache {
     pub fn new(
         device: &wgpu::Device,
-        _queue: &wgpu::Queue,
+        queue: &wgpu::Queue,
         backend: wgpu::Backend,
         layout: wgpu::BindGroupLayout,
         _shell: &Shell,
     ) -> Self {
         #[cfg(all(feature = "image", not(target_arch = "wasm32")))]
         let worker =
-            Worker::new(device, _queue, backend, layout.clone(), _shell);
+            Worker::new(device, queue, backend, layout.clone(), _shell);
 
         Self {
             atlas: Atlas::new(device, backend, layout),
@@ -38,7 +38,7 @@ impl Cache {
             raster: Raster {
                 cache: crate::image::raster::Cache::default(),
                 pending: HashMap::new(),
-                belt: wgpu::util::StagingBelt::new(2 * 1024 * 1024),
+                belt: crate::Belt::new(queue, 2 * 1024 * 1024),
             },
             #[cfg(feature = "svg")]
             vector: crate::image::vector::Cache::default(),
@@ -204,7 +204,7 @@ impl Cache {
         &mut self,
         device: &wgpu::Device,
         encoder: &mut wgpu::CommandEncoder,
-        belt: &mut wgpu::util::StagingBelt,
+        belt: &mut crate::Belt,
         handle: &core::image::Handle,
     ) -> Option<(&atlas::Entry, &Arc<wgpu::BindGroup>)> {
         use crate::image::raster::Memory;
@@ -271,7 +271,7 @@ impl Cache {
         &mut self,
         device: &wgpu::Device,
         encoder: &mut wgpu::CommandEncoder,
-        belt: &mut wgpu::util::StagingBelt,
+        belt: &mut crate::Belt,
         handle: &core::svg::Handle,
         color: Option<core::Color>,
         size: Size,
@@ -373,7 +373,7 @@ impl Drop for Cache {
 struct Raster {
     cache: crate::image::raster::Cache,
     pending: HashMap<core::image::Id, Vec<Callback>>,
-    belt: wgpu::util::StagingBelt,
+    belt: crate::Belt,
 }
 
 #[cfg(feature = "image")]
@@ -445,7 +445,7 @@ mod worker {
                 backend,
                 texture_layout,
                 shell: shell.clone(),
-                belt: wgpu::util::StagingBelt::new(4 * 1024 * 1024),
+                belt: crate::Belt::new(queue, 4 * 1024 * 1024),
                 jobs: jobs_receiver,
                 output: work_sender,
                 quit: quit_receiver,
@@ -495,7 +495,7 @@ mod worker {
         backend: wgpu::Backend,
         texture_layout: wgpu::BindGroupLayout,
         shell: Shell,
-        belt: wgpu::util::StagingBelt,
+        belt: crate::Belt,
         jobs: mpsc::Receiver<Job>,
         output: mpsc::SyncSender<Work>,
         quit: mpsc::Receiver<()>,

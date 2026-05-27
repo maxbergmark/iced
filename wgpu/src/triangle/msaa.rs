@@ -1,7 +1,6 @@
 use crate::core::{Size, Transformation};
 use crate::graphics;
 
-use std::num::NonZeroU64;
 use std::sync::{Arc, RwLock};
 
 #[derive(Debug, Clone)]
@@ -301,7 +300,7 @@ impl State {
         &mut self,
         device: &wgpu::Device,
         encoder: &mut wgpu::CommandEncoder,
-        belt: &mut wgpu::util::StagingBelt,
+        belt: &mut crate::Belt,
         pipeline: &Pipeline,
         region_size: Size<u32>,
     ) -> Transformation {
@@ -318,11 +317,9 @@ impl State {
                 encoder,
                 &self.ratio,
                 0,
-                NonZeroU64::new(std::mem::size_of::<Ratio>() as u64)
-                    .expect("non-empty ratio"),
+                bytemuck::bytes_of(&ratio),
                 device,
-            )
-            .copy_from_slice(bytemuck::bytes_of(&ratio));
+            );
 
             self.last_ratio = Some(ratio);
         }

@@ -111,7 +111,7 @@ impl Atlas {
         &mut self,
         device: &wgpu::Device,
         encoder: &mut wgpu::CommandEncoder,
-        belt: &mut wgpu::util::StagingBelt,
+        belt: &mut crate::Belt,
         width: u32,
         height: u32,
         pixels: &[u8],
@@ -314,8 +314,14 @@ impl Atlas {
         allocation: &Allocation,
         device: &wgpu::Device,
         encoder: &mut wgpu::CommandEncoder,
-        belt: &mut wgpu::util::StagingBelt,
+        belt: &mut crate::Belt,
     ) {
+        // TODO(wasm32/WebKit): Atlas uploads still go through the
+        // `StagingBelt::allocate` + `copy_buffer_to_texture` path exposed via
+        // `Belt::inner_mut()`. That path is also affected by WebKit's WebGPU
+        // validation bug. Image rendering on Safari will need a
+        // `queue.write_texture` fallback (analogous to what
+        // `Belt::write_buffer` already does for buffer writes).
         let (x, y) = allocation.position();
         let Size { width, height } = allocation.size();
         let layer = allocation.layer();
@@ -331,7 +337,7 @@ impl Atlas {
         let total_bytes =
             bytes_per_row * (height + padding.height * 2) as usize;
 
-        let buffer_slice = belt.allocate(
+        let buffer_slice = belt.inner_mut().allocate(
             wgpu::BufferSize::new(total_bytes as u64).unwrap(),
             wgpu::BufferSize::new(8 * 4).unwrap(),
             device,

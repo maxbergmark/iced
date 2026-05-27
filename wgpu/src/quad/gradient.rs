@@ -47,7 +47,7 @@ impl Layer {
         &mut self,
         device: &wgpu::Device,
         encoder: &mut wgpu::CommandEncoder,
-        belt: &mut wgpu::util::StagingBelt,
+        belt: &mut crate::Belt,
         instances: &[Gradient],
     ) {
         let _ = self.instances.resize(device, instances.len());

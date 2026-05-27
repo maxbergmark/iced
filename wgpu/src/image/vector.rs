@@ -95,7 +95,7 @@ impl Cache {
         &mut self,
         device: &wgpu::Device,
         encoder: &mut wgpu::CommandEncoder,
-        belt: &mut wgpu::util::StagingBelt,
+        belt: &mut crate::Belt,
         handle: &svg::Handle,
         color: Option<Color>,
         size: Size,

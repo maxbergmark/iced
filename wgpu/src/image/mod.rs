@@ -238,7 +238,7 @@ impl State {
         &mut self,
         pipeline: &Pipeline,
         device: &wgpu::Device,
-        belt: &mut wgpu::util::StagingBelt,
+        belt: &mut crate::Belt,
         encoder: &mut wgpu::CommandEncoder,
         cache: &mut Cache,
         images: &Batch,
@@ -509,7 +509,7 @@ impl Layer {
         &mut self,
         device: &wgpu::Device,
         encoder: &mut wgpu::CommandEncoder,
-        belt: &mut wgpu::util::StagingBelt,
+        belt: &mut crate::Belt,
         transformation: Transformation,
         scale_factor: f32,
         nearest: &[Instance],
@@ -523,14 +523,7 @@ impl Layer {
 
         let bytes = bytemuck::bytes_of(&uniforms);
 
-        belt.write_buffer(
-            encoder,
-            &self.uniforms,
-            0,
-            (bytes.len() as u64).try_into().expect("Sized uniforms"),
-            device,
-        )
-        .copy_from_slice(bytes);
+        belt.write_buffer(encoder, &self.uniforms, 0, bytes, device);
 
         let _ = self
             .instances
