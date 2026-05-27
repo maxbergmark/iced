@@ -325,11 +325,13 @@ impl graphics::Compositor for Compositor {
         let capabilities = surface.get_capabilities(&self.adapter);
         let has_copy_src =
             capabilities.usages.contains(wgpu::TextureUsages::COPY_SRC);
+        let is_webgpu =
+            cfg!(target_arch = "wasm32") && !cfg!(feature = "webgl");
         // On WASM, COPY_SRC is never advertised, so we always include it.
         // https://github.com/gfx-rs/wgpu/blob/72bb53b0ed9c49b49f71d738cfe3acc982ce7ab0/wgpu/src/backend/webgpu.rs#L3941
-        let usage = if has_copy_src || cfg!(target_arch = "wasm32") {
+        let usage = if has_copy_src || is_webgpu {
             wgpu::TextureUsages::RENDER_ATTACHMENT
-                // | wgpu::TextureUsages::COPY_SRC
+                | wgpu::TextureUsages::COPY_SRC
         } else {
             wgpu::TextureUsages::RENDER_ATTACHMENT
         };
