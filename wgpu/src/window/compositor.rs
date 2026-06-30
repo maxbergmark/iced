@@ -319,7 +319,8 @@ impl graphics::Compositor for Compositor {
     fn configure_surface(&mut self, surface: &mut Self::Surface, width: u32, height: u32) {
         let capabilities = surface.get_capabilities(&self.adapter);
         let has_copy_src = capabilities.usages.contains(wgpu::TextureUsages::COPY_SRC);
-        let usage = if has_copy_src {
+        let is_wasm = cfg!(target_arch = "wasm32");
+        let usage = if has_copy_src || is_wasm {
             wgpu::TextureUsages::RENDER_ATTACHMENT | wgpu::TextureUsages::COPY_SRC
         } else {
             wgpu::TextureUsages::RENDER_ATTACHMENT
